@@ -12,7 +12,7 @@ type Options = {
 
 const defaultOptions: Options = {
     folderName: "pages",
-    print: "no",
+    print: "info",
 };
 
 /**

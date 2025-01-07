@@ -2,6 +2,32 @@
 `rr-next-routes` is a utility library for generating **Next.js-style** routes for your **React Router v7** or **Remix** applications.    
 It provides a directory-based routing solution for React applications, similar to Next.js, and supports features like layouts, route parameters, and dynamic routing with nested route management.
 
+<details>
+<summary><b>Motivation</b></summary>
+
+<br>
+I really enjoy using file-based (directory-based) routing when working with next.js
+<br>
+While there are different solutions like [generouted](https://github.com/oedotme/generouted), most of them require you to modify multiple files and some even bring their own routing.
+
+**rr-next-routes** is a simple drop in solution for project using [remix](https://remix.run) or [react-router v7](https://reactrouter.com/home) in framework mode.
+<br>
+you can even still use the [manual routing](https://reactrouter.com/start/framework/routing) to add more routes to your liking while **rr-next-routes** takes care of the pages dir:
+
+#### **`routes.ts`**
+``` typescript
+import {route, type RouteConfig} from "@react-router/dev/routes";
+import {generateRouteConfig} from "rr-next-routes";
+
+const autoRoutes = generateRouteConfig({ print: "info" });
+export default [
+    ...autoRoutes,
+    route("some/path", "./some/file.tsx"),
+
+] satisfies RouteConfig;
+```
+</details>
+
 ## Features
 - Generate route configurations from a file-based structure.
 - Support for layouts using `_layout.tsx` files.
@@ -148,4 +174,4 @@ npm run build
 npm run dev
 ```
 ## License
-This project is licensed under the [ISC License]().
+This project is licensed under the [ISC License](https://opensource.org/license/isc-license-txt).

@@ -8,10 +8,9 @@ It provides a directory-based routing solution for React applications, similar t
 <br>
 I really enjoy using file-based (directory-based) routing when working with next.js
 <br>
-While there are different solutions like [generouted](https://github.com/oedotme/generouted), most of them require you to modify multiple files and some even bring their own routing.
 
-**rr-next-routes** is a simple drop in solution for project using [remix](https://remix.run) or [react-router v7](https://reactrouter.com/home) in framework mode.
-<br>
+While there are different solutions like [generouted](https://github.com/oedotme/generouted), most of them require you to modify multiple files and some even bring their own routing.   
+**rr-next-routes** is a simple drop in solution for project using [remix](https://remix.run) or [react-router v7](https://reactrouter.com/home) in framework mode.   
 you can even still use the [manual routing](https://reactrouter.com/start/framework/routing) to add more routes to your liking while **rr-next-routes** takes care of the pages dir:
 
 #### **`routes.ts`**

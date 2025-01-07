@@ -1,0 +1,45 @@
+{
+  "name": "rr-next-routes",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "version": "0.0.2",
+  "description": "generate nextjs-style routes in your react-router-v7 application",
+  "scripts": {
+    "dev": "vitest watch",
+    "build": "tsup",
+    "test": "vitest run"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/next-routes.d.ts",
+      "import": "./dist/next-routes.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "better",
+    "routes",
+    "react-router",
+    "nextjs",
+    "directory",
+    "based",
+    "routing"
+  ],
+  "author": "Vincent Niehues",
+  "license": "ISC",
+  "devDependencies": {
+    "@react-router/dev": "^7.0.0",
+    "@types/node": "^22.10.5",
+    "@vitest/coverage-v8": "^2.1.8",
+    "memfs": "^4.15.3",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.10",
+    "vitest": "^2.1.4"
+  }
+}

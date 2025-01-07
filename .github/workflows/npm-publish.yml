@@ -22,6 +22,7 @@ jobs:
       - run: npm test
 
   publish-npm:
+    if: contains(github.event.head_commit.message, 'release')
     needs: build
     runs-on: ubuntu-latest
     steps:

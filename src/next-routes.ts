@@ -1,6 +1,6 @@
-import { readdirSync, statSync } from 'fs';
-import { join, parse, relative } from 'path';
-import { type RouteConfigEntry, route, layout } from "@react-router/dev/routes";
+import { readdirSync, statSync } from 'node:fs';
+import { join, parse, relative, resolve } from 'node:path';
+import { type RouteConfigEntry, getAppDirectory, route, layout } from "@react-router/dev/routes";
 import { deepSortByPath, parseParameter, printRoutesAsTable, printRoutesAsTree, transformRoutePath } from "./utils";
 
 type PrintOption = "no" | "info" | "table" | "tree";
@@ -56,7 +56,13 @@ function createRouteConfig(
 export function generateRouteConfig(options: Options = defaultOptions): RouteConfigEntry[] {
     const baseFolder = options.folderName || defaultOptions.folderName!;
     const printOption = options.print || defaultOptions.print!;
-    const pagesDir = "./app/" + baseFolder;
+    
+    let appDirectory = "./app"
+    try {
+        appDirectory = getAppDirectory();
+    } catch {}
+    
+    const pagesDir = resolve(appDirectory, baseFolder);
 
     /**
      * Scans a directory and returns its contents

@@ -5,15 +5,34 @@ import {deepSortByPath, parseParameter, printRoutesAsTable, printRoutesAsTree, t
 
 type PrintOption = "no" | "info" | "table" | "tree";
 
+export const appRouterStyle: Options = {
+    folderName: "",
+    print: "info",
+    layoutFileName: "layout",
+    routeFileNames: ["page", "route"], // in nextjs this is the difference between a page (with components) and an api route (without components). in react-router an api route (resource route) just does not export a default component. 
+    extensions: [".tsx", ".ts", ".jsx", ".js"],
+    routeFileNameOnly: true, // all files with names different from routeFileNames get no routes
+};
+
+export const pageRouterStyle: Options = {
+    folderName: "pages",
+    print: "info",
+    layoutFileName: "_layout", //layouts do no exist like that in nextjs pages router so we use a special file.
+    routeFileNames: ["index"],
+    extensions: [".tsx", ".ts", ".jsx", ".js"],
+    routeFileNameOnly: false, // all files without a leading underscore get routes as long as the extension matches
+};
+
 type Options = {
     folderName?: string;
+    layoutFileName?: string;
+    routeFileNames?: string[];
+    routeFileNameOnly?: boolean;
+    extensions?: string[];
     print?: PrintOption;
 };
 
-const defaultOptions: Options = {
-    folderName: "pages",
-    print: "info",
-};
+const defaultOptions: Options = appRouterStyle;
 
 /**
  * Creates a route configuration for a file or directory
@@ -21,23 +40,25 @@ const defaultOptions: Options = {
  * @param parentPath - Current path in the route hierarchy
  * @param relativePath - Relative path to the file from pages directory
  * @param folderName - Name of the current folder (needed for dynamic routes)
+ * @param routeFileNames - name of the index routes
  * @returns Route configuration entry
  */
 function createRouteConfig(
     name: string,
     parentPath: string,
     relativePath: string,
-    folderName: string
+    folderName: string,
+    routeFileNames: string[]
 ): RouteConfigEntry {
     // Handle index routes in dynamic folders
-    if (name === 'index' && folderName.startsWith('[') && folderName.endsWith(']')) {
+    if (routeFileNames.includes(name) && folderName.startsWith('[') && folderName.endsWith(']')) {
         const {routeName} = parseParameter(folderName);
         const routePath = parentPath === '' ? routeName : `${parentPath.replace(folderName, '')}${routeName}`;
         return route(transformRoutePath(routePath), relativePath);
     }
 
     // Handle regular index routes
-    if (name === 'index') {
+    if (routeFileNames.includes(name)) {
         const routePath = parentPath === '' ? '/' : parentPath;
         return route(transformRoutePath(routePath), relativePath);
     }
@@ -54,8 +75,14 @@ function createRouteConfig(
  * @returns Array of route configurations
  */
 export function generateRouteConfig(options: Options = defaultOptions): RouteConfigEntry[] {
-    const baseFolder = options.folderName || defaultOptions.folderName!;
-    const printOption = options.print || defaultOptions.print!;
+    const {
+        folderName: baseFolder = defaultOptions.folderName!,
+        print: printOption = defaultOptions.print!,
+        extensions = defaultOptions.extensions!,
+        layoutFileName = defaultOptions.layoutFileName!,
+        routeFileNames = defaultOptions.routeFileNames!,
+        routeFileNameOnly = defaultOptions.routeFileNameOnly!,
+    } = options;
 
     let appDirectory = getAppDirectory();
 
@@ -68,7 +95,10 @@ export function generateRouteConfig(options: Options = defaultOptions): RouteCon
     function scanDir(dirPath: string) {
         return {
             folderName: parse(dirPath).name,
-            files: readdirSync(dirPath).sort((a, b) => (a === 'index.tsx' ? -1 : 1))
+            files: readdirSync(dirPath).sort((a, b) => {
+                const {ext: aExt, name: aName} = parse(a);
+                return ((routeFileNames.includes(aName) && extensions.includes(aExt)) ? -1 : 1)
+            })
         };
     }
 
@@ -80,7 +110,10 @@ export function generateRouteConfig(options: Options = defaultOptions): RouteCon
     function scanDirectory(dir: string, parentPath: string = ''): RouteConfigEntry[] {
         const routes: RouteConfigEntry[] = [];
         const {files, folderName} = scanDir(dir);
-        const layoutFile = files.find(item => item === '_layout.tsx');
+        const layoutFile = files.find(item => {
+            const {ext, name} = parse(item);
+            return (name === layoutFileName && extensions.includes(ext));
+        });
         const currentLevelRoutes: RouteConfigEntry[] = [];
 
         // Process each file in the directory
@@ -90,21 +123,22 @@ export function generateRouteConfig(options: Options = defaultOptions): RouteCon
             const fullPath = join(dir, item);
             const stats = statSync(fullPath);
             const {name, ext} = parse(item);
-            const relativePath = `${baseFolder}/${relative(pagesDir, fullPath)}`;
+            const relativePath = join(baseFolder, relative(pagesDir, fullPath));
 
             if (stats.isDirectory()) {
                 // Handle nested directories
                 const nestedRoutes = scanDirectory(fullPath, `${parentPath}/${name}`);
                 (layoutFile ? currentLevelRoutes : routes).push(...nestedRoutes);
-            } else if (ext === '.tsx' || ext === '.ts') {
-                const routeConfig = createRouteConfig(name, parentPath, relativePath, folderName);
+            } else if (extensions.includes(ext)) {
+                if (routeFileNameOnly && !routeFileNames.includes(name)) return;
+                const routeConfig = createRouteConfig(name, parentPath, relativePath, folderName, routeFileNames);
                 (layoutFile ? currentLevelRoutes : routes).push(routeConfig);
             }
         });
 
         // If layout file exists, wrap current level routes in a layout
         if (layoutFile) {
-            const layoutPath = `${baseFolder}/${relative(pagesDir, join(dir, layoutFile))}`;
+            const layoutPath = join(baseFolder, relative(pagesDir, join(dir, layoutFile)));
             routes.push(layout(layoutPath, currentLevelRoutes));
         } else {
             routes.push(...currentLevelRoutes);

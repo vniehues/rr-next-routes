@@ -5,7 +5,8 @@ export function transformRoutePath(path: string): string {
         .replace(/\[\[\s*([^\]]+)\s*]]/g, ':$1?') // Handle optional parameters [[param]]
         .replace(/\[\.\.\.\s*([^\]]+)\s*]/g, '*')  // Handle catch-all parameters [...param]
         .replace(/\[([^\]]+)]/g, ':$1')           // Handle regular parameters [param]
-        .replace(/\/\([^)]*\)\//g, '/');           // Remove parentheses and contents only if surrounded by slashes
+        .replace(/\/\([^)]*\)\//g, '/')          // Handle regular parameters [param]
+        .replace(/\/\([^)]*\)/g, '');           // Remove parentheses and contents only if surrounded by slashes
 }
 
 function parseDynamicRoute(name: string): { paramName?: string; routeName: string } {

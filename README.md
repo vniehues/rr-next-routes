@@ -16,30 +16,42 @@ you can even still use the [manual routing](https://reactrouter.com/start/framew
 #### **`routes.ts`**
 ``` typescript
 import {route, type RouteConfig} from "@react-router/dev/routes";
-import {generateRouteConfig} from "rr-next-routes";
+import {generateRouteConfig, appRouterStyle} from "rr-next-routes";
 
-const autoRoutes = generateRouteConfig({ print: "info" });
+const autoRoutes = generateRouteConfig({
+    ...appRouterStyle,
+    print: "tree",
+});
+
 export default [
     ...autoRoutes,
     route("some/path", "./some/file.tsx"),
-
 ] satisfies RouteConfig;
 ```
 </details>
 
+---
+
 ## Features
+#### Keep using **React Router v7** in framework mode and still get: 
 - Generate route configurations from a file-based structure.
-- Support for layouts using `_layout.tsx` files.
+- Supports for (nested) layouts
 - Handles dynamic routes, optional parameters, and catch-all routes (`[param].tsx`, `[[param]].tsx`, `[...param].tsx`).
-- Compatible with **React Router v7** and Remix routing systems.
-- Configurable output via print options (e.g., info, table, or tree).
-- Sorting and managing nested routes with built-in utilities.
+- Compatible with **React Router v7** (framework mode) and **Remix** routing systems.
+- Predefined configurations to suit both app-router and page-router patterns.
+- Flexible configuration system.
+- Configurable printing options: `info`, `table`, or `tree` to console log the generation results
+
+---
 
 ## Installation
 You can install the library using npm:
 ``` bash
 npm install rr-next-routes
 ```
+
+---
+
 ## Usage
 ### Example
 Here’s a sample usage of `rr-next-routes` for generating route configurations:
@@ -52,63 +64,82 @@ const routes = generateRouteConfig({ print: "info" });
 
 export default routes satisfies RouteConfig;
 ```
+
+---
+
 ## Configuration Options
+
 The `generateRouteConfig` function accepts an optional configuration object of type `Options`:
-### `Options` Type
-``` typescript
+
+#### `Options` Type
+```typescript
 type PrintOption = "no" | "info" | "table" | "tree";
 
 type Options = {
-    folderName?: string; // Name of the folder containing route files. Defaults to "pages".
-    print?: PrintOption; // Specifies the route output mode: "no", "info", "table", or "tree".
-};
-
-const defaultOptions: Options = {
-    folderName: "pages", // Default folder name for routes (inside the `/app` directory).
-    print: "info",       // Default print option ("info").
+    folderName?: string;       // Folder to scan for routes (default: "pages").
+    print?: PrintOption;       // Controls printing output (default: "info").
+    layoutFileName?: string;   // Name of layout files (default: "_layout").
+    routeFileNames?: string[]; // Names for route files (e.g., ["page", "index"]).
+    routeFileNameOnly?: boolean; // Restrict routes to matching routeFileNames.
+    extensions?: string[];     // File extensions to process (e.g., [".tsx", ".ts"]).
 };
 ```
-### Config Options Description
-- **`folderName (optional)`**
-    - The directory to be scanned for route files. Defaults to `"pages"`. This folder needs to be located inside the `/app` directory.
-    - Example: If set to `custom-pages`, your route files should be in `/app/custom-pages`.
 
-- **`print (optional)`**
-    - Controls the output of route generation.
-    - Options:
-        - `"no"`: Does not print any output.
-        - `"info"`: Prints a success message (default behavior).
-        - `"table"`: Prints the generated routes in a table format.
-        - `"tree"`: Prints the routes in a nested tree structure.
+### Predefined Styles
+
+#### 1. `appRouterStyle (default)`
+Best for projects following the Next.js app-router convention:
+
+```typescript
+export const appRouterStyle: Options = {
+    folderName: "",
+    print: "info",
+    layoutFileName: "layout",
+    routeFileNames: ["page", "route"],
+    extensions: [".tsx", ".ts", ".jsx", ".js"],
+    routeFileNameOnly: true,
+};
+```
+
+#### 2. `pageRouterStyle`
+Best for projects following the Next.js pages-router convention:
+
+```typescript
+export const pageRouterStyle: Options = {
+    folderName: "pages",
+    print: "info",
+    layoutFileName: "_layout",
+    routeFileNames: ["index"],
+    extensions: [".tsx", ".ts", ".jsx", ".js"],
+    routeFileNameOnly: false,
+};
+```
+
+---
 
 ### Example Configurations
-#### Default Configuration
-``` typescript
-const routes = generateRouteConfig();
+
+#### Default Configuration:
+```typescript
+const routes = generateRouteConfig(); // Uses default options (appRouterStyle).
 ```
-This will scan the `/app/pages` directory and print `"✅ Generated Routes"` in the console.
-#### Tree Print Output Example
-``` typescript
-const routes = generateRouteConfig({ print: "tree" });
+
+#### Using Pages Router:
+```typescript
+const routes = generateRouteConfig(pageRouterStyle);
 ```
-This will print a tree representation of the routes in the console, like so:
-``` 
-✅ Generated Route Tree (open to see generated routes)
-├── "/" (pages/index.tsx)
-├── (layout) (pages/dashboard/_layout.tsx)
-│   ├── "/dashboard" (pages/dashboard/index.tsx)
-│   ├── "/dashboard/settings" (pages/dashboard/settings.tsx)
-└── "/about" (pages/about.tsx)
+#### Custom App Router:
+```typescript
+const routes = generateRouteConfig({
+    ...appRouterStyle,
+    print: "tree",
+    layoutFileName: "_customLayout",
+});
 ```
-#### Custom Folder Name
-``` typescript
-const routes = generateRouteConfig({ folderName: "custom-pages" });
-```
-This will scan the `/app/custom-pages` directory instead of `/app/pages`.
-## Folder and File Structure
-The library works within the `/app` directory and generates routes based on the specified folder (`folderName`).    
-Below is an example file structure and the resulting routes:
-### Example File Structure
+
+---
+
+### Example File Structure (pageRouterStyle)
 ``` 
 app/
 ├── pages/
@@ -156,11 +187,17 @@ These routes are created using a special character mapping:
 | `[id].tsx` | `/:id` |
 | `[[optional]].tsx` | `/:optional?` |
 | `[...all].tsx` | `/*` |
+
+
+---
 ## Testing
 This project uses **Vitest** for testing. To run the tests:
 ``` bash
 npm test
 ```
+
+---
+
 ## Development
 The project supports ES modules and is built using `tsup`.
 ### Build
@@ -172,5 +209,8 @@ npm run build
 ``` bash
 npm run dev
 ```
+
+---
+
 ## License
 This project is licensed under the [ISC License](https://opensource.org/license/isc-license-txt).

@@ -15,6 +15,14 @@ vi.mock('node:fs/promises', async () => {
     return memfs.fs.promises
 })
 
+vi.mock(import('@react-router/dev/routes'), async (importOriginal) => {
+    const mod = await importOriginal() // type is inferred
+    return {
+        ...mod,
+        getAppDirectory: vi.fn(() => './app')
+    }
+})
+
 describe('direct route transform tests', () => {
     test("catchall", () => {
         const parsed = parseParameter("[...all]")

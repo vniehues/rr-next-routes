@@ -1,7 +1,7 @@
-import { readdirSync, statSync } from 'fs';
-import { join, parse, relative } from 'path';
-import { type RouteConfigEntry, route, layout } from "@react-router/dev/routes";
-import { deepSortByPath, parseParameter, printRoutesAsTable, printRoutesAsTree, transformRoutePath } from "./utils";
+import {readdirSync, statSync} from 'node:fs';
+import {join, parse, relative, resolve} from 'node:path';
+import {type RouteConfigEntry, getAppDirectory, route, layout} from "@react-router/dev/routes";
+import {deepSortByPath, parseParameter, printRoutesAsTable, printRoutesAsTree, transformRoutePath} from "./utils";
 
 type PrintOption = "no" | "info" | "table" | "tree";
 
@@ -31,7 +31,7 @@ function createRouteConfig(
 ): RouteConfigEntry {
     // Handle index routes in dynamic folders
     if (name === 'index' && folderName.startsWith('[') && folderName.endsWith(']')) {
-        const { routeName } = parseParameter(folderName);
+        const {routeName} = parseParameter(folderName);
         const routePath = parentPath === '' ? routeName : `${parentPath.replace(folderName, '')}${routeName}`;
         return route(transformRoutePath(routePath), relativePath);
     }
@@ -43,7 +43,7 @@ function createRouteConfig(
     }
 
     // Handle dynamic and regular routes
-    const { routeName } = parseParameter(name);
+    const {routeName} = parseParameter(name);
     const routePath = parentPath === '' ? `/${routeName}` : `${parentPath}/${routeName}`;
     return route(transformRoutePath(routePath), relativePath);
 }
@@ -56,7 +56,10 @@ function createRouteConfig(
 export function generateRouteConfig(options: Options = defaultOptions): RouteConfigEntry[] {
     const baseFolder = options.folderName || defaultOptions.folderName!;
     const printOption = options.print || defaultOptions.print!;
-    const pagesDir = "./app/" + baseFolder;
+
+    let appDirectory = getAppDirectory();
+
+    const pagesDir = resolve(appDirectory, baseFolder);
 
     /**
      * Scans a directory and returns its contents
@@ -76,7 +79,7 @@ export function generateRouteConfig(options: Options = defaultOptions): RouteCon
      */
     function scanDirectory(dir: string, parentPath: string = ''): RouteConfigEntry[] {
         const routes: RouteConfigEntry[] = [];
-        const { files, folderName } = scanDir(dir);
+        const {files, folderName} = scanDir(dir);
         const layoutFile = files.find(item => item === '_layout.tsx');
         const currentLevelRoutes: RouteConfigEntry[] = [];
 
@@ -86,7 +89,7 @@ export function generateRouteConfig(options: Options = defaultOptions): RouteCon
 
             const fullPath = join(dir, item);
             const stats = statSync(fullPath);
-            const { name, ext } = parse(item);
+            const {name, ext} = parse(item);
             const relativePath = `${baseFolder}/${relative(pagesDir, fullPath)}`;
 
             if (stats.isDirectory()) {

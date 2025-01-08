@@ -19,8 +19,7 @@ vi.mock(import('@react-router/dev/routes'), async (importOriginal) => {
     const mod = await importOriginal() // type is inferred
     return {
         ...mod,
-        getAppDirectory: vi.fn(() => './app'),
-        total: vi.fn(),
+        getAppDirectory: vi.fn(() => './app')
     }
 })
 

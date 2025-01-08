@@ -1,6 +1,6 @@
 import {assert, beforeEach, describe, expect, test, vi} from 'vitest'
 import {vol} from 'memfs'
-import {generateRouteConfig} from "./next-routes";
+import {appRouterStyle, generateRouteConfig, pageRouterStyle} from "./next-routes";
 import {deepSortByPath, parseParameter, transformRoutePath} from "./utils";
 import * as fs from "node:fs";
 import {index, layout, prefix, route} from "@react-router/dev/routes";
@@ -87,7 +87,7 @@ describe('compare with actual routes', () => {
 
 
     test('creates index routes correctly', () => {
-        const contents = generateRouteConfig({folderName: 'pages'})
+        const contents = generateRouteConfig(pageRouterStyle);
         const expected = [
             layout("pages/dashboard/_layout.tsx", [
                 route("/dashboard", "pages/dashboard/index.tsx"),
@@ -162,10 +162,10 @@ describe('route generation same regardless of print', () => {
     })
 
     test('generates route config correctly', () => {
-        const contentsNoPrint = generateRouteConfig({folderName: 'pages', print: "no"});
-        const contentsInfoPrint = generateRouteConfig({folderName: 'pages', print: "info"});
-        const contentsTreePrint = generateRouteConfig({folderName: 'pages', print: "tree"});
-        const contentsTablePrint = generateRouteConfig({folderName: 'pages', print: "table"});
+        const contentsNoPrint = generateRouteConfig({...pageRouterStyle, print: "no"});
+        const contentsInfoPrint = generateRouteConfig({...pageRouterStyle, print: "info"});
+        const contentsTreePrint = generateRouteConfig({...pageRouterStyle, print: "tree"});
+        const contentsTablePrint = generateRouteConfig({...pageRouterStyle, print: "table"});
 
         assert.sameDeepMembers(contentsNoPrint, contentsInfoPrint, 'same members')
         assert.sameDeepMembers(contentsNoPrint, contentsTreePrint, 'same members')
@@ -273,7 +273,7 @@ describe('route generation tests', () => {
 
 
     test('creates index routes correctly', () => {
-        const contents = generateRouteConfig({folderName: 'pages'})
+        const contents = generateRouteConfig(pageRouterStyle)
         const expected = [
             {file: 'pages/index.tsx', children: undefined, path: '/'},
             {
@@ -281,6 +281,65 @@ describe('route generation tests', () => {
                 children: undefined,
                 path: '/utils'
             },
+        ]
+
+        assert.sameDeepMembers(contents, expected, 'same members')
+    })
+})
+
+describe('approuter route generation tests', () => {
+    beforeEach(() => {
+        // Reset volume before each test
+        vol.reset();
+
+        // Create a mock file structure
+        vol.fromJSON({
+            './app/page.tsx': 'console.log("Hello")',
+            './app/folder/page.tsx': 'export const helper = () => {}',
+            './app/folder/notARoute.tsx': 'export const helper = () => {}',
+            './app/folder/test/(excluded)/route.ts': 'export const helper = () => {}',
+            './app/folder/test/_discarded/route.ts': 'export const helper = () => {}',
+            './app/folder/test/_discarded/page.tsx': 'export const helper = () => {}',
+        })
+    })
+
+    test('creates index routes correctly', () => {
+        const contents = generateRouteConfig(appRouterStyle)
+        const expected = [
+            {file: 'page.tsx', children: undefined, path: '/'},
+            {file: 'folder/page.tsx', children: undefined, path: '/folder'},
+            {file: 'folder/test/(excluded)/route.ts', children: undefined, path: '/folder/test'},
+        ]
+
+        assert.sameDeepMembers(contents, expected, 'same members')
+    })
+})
+
+describe('pagerouter route generation tests', () => {
+    beforeEach(() => {
+        // Reset volume before each test
+        vol.reset();
+
+        // Create a mock file structure
+        vol.fromJSON({
+            './app/pages/index.tsx': 'console.log("Hello")',
+            './app/pages/folder/index.tsx': 'export const helper = () => {}',
+            './app/pages/folder/stillARoute.tsx': 'export const helper = () => {}',
+            './app/pages/folder/test/(excluded)/route.ts': 'export const helper = () => {}',
+            './app/pages/folder/test/(excluded)/index.tsx': 'export const helper = () => {}',
+            './app/pages/folder/test/_discarded/route.ts': 'export const helper = () => {}',
+            './app/pages/folder/test/_discarded/page.tsx': 'export const helper = () => {}',
+        })
+    })
+
+    test('creates index routes correctly', () => {
+        const contents = generateRouteConfig(pageRouterStyle)
+        const expected = [
+            {file: 'pages/index.tsx', children: undefined, path: '/'},
+            {file: 'pages/folder/index.tsx', children: undefined, path: '/folder'},
+            {file: 'pages/folder/stillARoute.tsx', children: undefined, path: '/folder/stillARoute'},
+            {file: 'pages/folder/test/(excluded)/index.tsx', children: undefined, path: '/folder/test'},
+            {file: 'pages/folder/test/(excluded)/route.ts', children: undefined, path: '/folder/test/route'},
         ]
 
         assert.sameDeepMembers(contents, expected, 'same members')
@@ -335,8 +394,8 @@ describe('complex Route generation tests', () => {
     })
 
     test('generates route config correctly', () => {
-        const contents = generateRouteConfig({folderName: 'pages', print: "info"});
-        const contents2 = generateRouteConfig({folderName: 'pages', print: "tree"});
+        const contents = generateRouteConfig({...pageRouterStyle, print: "info"});
+        const contents2 = generateRouteConfig({...pageRouterStyle, print: "tree"});
 
         assert.sameDeepMembers(contents, contents2, 'same members')
 
@@ -445,7 +504,7 @@ describe('different baseDir route generation tests', () => {
 
  
     test('creates index routes correctly', () => {
-        const contents = generateRouteConfig({folderName: 'diff'})
+        const contents = generateRouteConfig({...pageRouterStyle, folderName: 'diff'})
         const expected = [
             {
                 file: 'diff/index.tsx',
@@ -473,7 +532,7 @@ describe('AUTOGENERATED BY RIDER generateRouteConfig', () => {
             './app/pages/index.tsx': 'export default () => {}',
         });
 
-        const routes = generateRouteConfig({folderName: 'pages'});
+        const routes = generateRouteConfig(pageRouterStyle);
         const expected = [
             {file: 'pages/index.tsx', children: undefined, path: '/'},
         ];
@@ -487,7 +546,7 @@ describe('AUTOGENERATED BY RIDER generateRouteConfig', () => {
             './app/different/index.tsx': 'export default () => {}',
         });
 
-        const routes = generateRouteConfig({folderName: 'different'});
+        const routes = generateRouteConfig({...pageRouterStyle, folderName: 'different'});
         const expected = [
             {file: 'different/index.tsx', children: undefined, path: '/'},
         ];
@@ -501,7 +560,7 @@ describe('AUTOGENERATED BY RIDER generateRouteConfig', () => {
             './app/pages/nested/index.tsx': 'export default () => {}',
         });
 
-        const routes = generateRouteConfig({folderName: 'pages'});
+        const routes = generateRouteConfig(pageRouterStyle);
         const expected = [
             {
                 file: 'pages/_layout.tsx',
@@ -524,7 +583,7 @@ describe('AUTOGENERATED BY RIDER generateRouteConfig', () => {
             './app/pages/index.tsx': 'export default () => {}',
         });
 
-        const routes = generateRouteConfig({folderName: 'pages'});
+        const routes = generateRouteConfig(pageRouterStyle);
         const expected = [
             {
                 file: 'pages/_layout.tsx',
@@ -546,7 +605,7 @@ describe('AUTOGENERATED BY RIDER generateRouteConfig', () => {
             './app/pages/[dynamic].tsx': 'export default () => {}',
         });
 
-        const routes = generateRouteConfig({folderName: 'pages'});
+        const routes = generateRouteConfig(pageRouterStyle);
         const expected = [
             {file: 'pages/[dynamic].tsx', children: undefined, path: '/:dynamic'},
         ];
@@ -559,7 +618,7 @@ describe('AUTOGENERATED BY RIDER generateRouteConfig', () => {
             './app/pages/[[optional]].tsx': 'export default () => {}',
         });
 
-        const routes = generateRouteConfig({folderName: 'pages'});
+        const routes = generateRouteConfig(pageRouterStyle);
         const expected = [
             {file: 'pages/[[optional]].tsx', children: undefined, path: '/:optional?'},
         ];
@@ -572,7 +631,7 @@ describe('AUTOGENERATED BY RIDER generateRouteConfig', () => {
             './app/pages/[...all].tsx': 'export default () => {}',
         });
 
-        const routes = generateRouteConfig({folderName: 'pages'});
+        const routes = generateRouteConfig(pageRouterStyle);
         const expected = [
             {file: 'pages/[...all].tsx', children: undefined, path: '/*'},
         ];
@@ -586,7 +645,7 @@ describe('AUTOGENERATED BY RIDER generateRouteConfig', () => {
             './app/pages/index.tsx': 'export default () => {}',
         });
 
-        const routes = generateRouteConfig({folderName: 'pages'});
+        const routes = generateRouteConfig(pageRouterStyle);
         const expected = [
             {file: 'pages/index.tsx', children: undefined, path: '/'},
             {file: 'pages/(excluded)/file.tsx', children: undefined, path: '/file'},

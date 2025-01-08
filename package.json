@@ -4,7 +4,7 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "generate nextjs-style routes in your react-router-v7 application",
   "scripts": {
     "dev": "vitest watch",

@@ -27,6 +27,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        if: steps.check.outputs.changed == 'true'
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org/
       - name: Version Check
         uses: EndBug/version-check@v2.1.5
         id: check
@@ -38,11 +43,6 @@ jobs:
       - name: Log when unchanged
         if: steps.check.outputs.changed == 'false'
         run: 'echo "No version change - No release."'
-      - uses: actions/setup-node@v4
-        if: steps.check.outputs.changed == 'true'
-        with:
-          node-version: 22
-          registry-url: https://registry.npmjs.org/
       - run: npm ci
         if: steps.check.outputs.changed == 'true'
       - run: npm run build

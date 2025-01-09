@@ -26,6 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with: 
+          fetch-depth: 20
       - uses: actions/setup-node@v4
         if: steps.check.outputs.changed == 'true'
         with:

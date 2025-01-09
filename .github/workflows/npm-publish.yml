@@ -4,7 +4,6 @@
 name: build, test & release
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
@@ -27,9 +26,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: 
-          fetch-depth: 20
+          fetch-depth: 0
       - uses: actions/setup-node@v4
-        if: steps.check.outputs.changed == 'true'
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org/

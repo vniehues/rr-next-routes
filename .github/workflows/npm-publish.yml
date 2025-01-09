@@ -27,12 +27,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Version Check
+        uses: EndBug/version-check@v2.1.5
+        id: check
+        with:
+          diff-search: true
+      - name: Log when changed
+        if: steps.check.outputs.changed == 'true'
+        run: 'echo "Version change found in commit ${{ steps.check.outputs.commit }}! New version: ${{ steps.check.outputs.version }} (${{ steps.check.outputs.type }})"'
+      - name: Log when unchanged
+        if: steps.check.outputs.changed == 'false'
+        run: 'echo "No version change - No release."'
       - uses: actions/setup-node@v4
+        if: steps.check.outputs.changed == 'true'
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org/
       - run: npm ci
+        if: steps.check.outputs.changed == 'true'
       - run: npm run build
+        if: steps.check.outputs.changed == 'true'
       - run: npm publish
+        if: steps.check.outputs.changed == 'true'
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}

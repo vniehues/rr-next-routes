@@ -1,12 +1,18 @@
 import type {RouteConfigEntry} from "@react-router/dev/routes";
 
 export function transformRoutePath(path: string): string {
-    return path
+    let transformedPath = path
         .replace(/\[\[\s*([^\]]+)\s*]]/g, ':$1?') // Handle optional parameters [[param]]
         .replace(/\[\.\.\.\s*([^\]]+)\s*]/g, '*')  // Handle catch-all parameters [...param]
         .replace(/\[([^\]]+)]/g, ':$1')           // Handle regular parameters [param]
         .replace(/\/\([^)]*\)\//g, '/')          // Handle regular parameters [param]
         .replace(/\/\([^)]*\)/g, '');           // Remove parentheses and contents only if surrounded by slashes
+    
+    if(transformedPath === "") {
+        transformedPath = "/" + transformedPath;
+    }
+    
+    return transformedPath;
 }
 
 function parseDynamicRoute(name: string): { paramName?: string; routeName: string } {

@@ -70,11 +70,21 @@ function createRouteConfig(
 }
 
 /**
+ * Generates route configuration from a Next.js-style pages directory for Remix/**
+ * @deprecated The method should not be used anymore. please use {@link nextRoutes} instead.
+ * @param options - Configuration options for route generation
+ * @returns Array of route configurations
+ */
+export function generateRouteConfig(options: Options = defaultOptions) {
+    return nextRoutes(options);
+}
+
+/**
  * Generates route configuration from a Next.js-style pages directory for Remix
  * @param options - Configuration options for route generation
  * @returns Array of route configurations
  */
-export function generateRouteConfig(options: Options = defaultOptions): RouteConfigEntry[] {
+export function nextRoutes(options: Options = defaultOptions): RouteConfigEntry[] {
     const {
         folderName: baseFolder = defaultOptions.folderName!,
         print: printOption = defaultOptions.print!,
@@ -115,7 +125,7 @@ export function generateRouteConfig(options: Options = defaultOptions): RouteCon
             return (name === layoutFileName && extensions.includes(ext));
         });
         const currentLevelRoutes: RouteConfigEntry[] = [];
-
+        
         // Process each file in the directory
         files.forEach(item => {
             if (item.startsWith('_')) return;
@@ -130,6 +140,7 @@ export function generateRouteConfig(options: Options = defaultOptions): RouteCon
                 const nestedRoutes = scanDirectory(fullPath, `${parentPath}/${name}`);
                 (layoutFile ? currentLevelRoutes : routes).push(...nestedRoutes);
             } else if (extensions.includes(ext)) {
+                // Early return if strict file names are enabled and the current item is not in the list.
                 if (routeFileNameOnly && !routeFileNames.includes(name)) return;
                 const routeConfig = createRouteConfig(name, parentPath, relativePath, folderName, routeFileNames);
                 (layoutFile ? currentLevelRoutes : routes).push(routeConfig);

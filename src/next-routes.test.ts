@@ -1,6 +1,6 @@
 import {assert, beforeEach, describe, expect, test, vi} from 'vitest'
 import {vol} from 'memfs'
-import {appRouterStyle, generateRouteConfig, pageRouterStyle} from "./next-routes";
+import {appRouterStyle, generateRouteConfig, nextRoutes, pageRouterStyle} from "./next-routes";
 import {deepSortByPath, parseParameter, transformRoutePath} from "./utils";
 import * as fs from "node:fs";
 import {index, layout, prefix, route} from "@react-router/dev/routes";
@@ -75,19 +75,18 @@ describe('compare with actual routes', () => {
             './app/pages/profile/name.tsx': 'export const helper = () => {}',
             './app/pages/profile/password.tsx': 'export const helper = () => {}',
             './app/pages/profile/email.tsx': 'export const helper = () => {}',
-            
+
             './app/pages/patha/_layout.tsx': 'console.log("Hello")',
             './app/pages/patha/about.tsx': 'export const helper = () => {}',
             './app/pages/patha/settings.tsx': 'export const helper = () => {}',
-            
+
             './app/pages/patha/(excludedPath)/_layout.tsx': 'export const helper = () => {}',
             './app/pages/patha/(excludedPath)/routeb.tsx': 'export const helper = () => {}',
         })
     })
 
-
     test('creates index routes correctly', () => {
-        const contents = generateRouteConfig(pageRouterStyle);
+        const contents = nextRoutes(pageRouterStyle);
         const expected = [
             layout("pages/dashboard/_layout.tsx", [
                 route("/dashboard", "pages/dashboard/index.tsx"),
@@ -96,7 +95,7 @@ describe('compare with actual routes', () => {
             layout("pages/patha/_layout.tsx", [
                 route("/patha/about", "pages/patha/about.tsx"),
                 route("/patha/settings", "pages/patha/settings.tsx"),
-                
+
                 layout("pages/patha/(excludedPath)/_layout.tsx", [
                     route("/patha/routeb", "pages/patha/(excludedPath)/routeb.tsx"),
                 ])
@@ -273,7 +272,7 @@ describe('route generation tests', () => {
 
 
     test('creates index routes correctly', () => {
-        const contents = generateRouteConfig(pageRouterStyle)
+        const contents = nextRoutes(pageRouterStyle)
         const expected = [
             {file: 'pages/index.tsx', children: undefined, path: '/'},
             {
@@ -281,6 +280,74 @@ describe('route generation tests', () => {
                 children: undefined,
                 path: '/utils'
             },
+        ]
+
+        assert.sameDeepMembers(contents, expected, 'same members')
+    })
+})
+
+describe("creates index route from excluded folder", () => {
+    beforeEach(() => {
+        // Reset volume before each test
+        vol.reset();
+
+        // Create a mock file structure
+        vol.fromJSON({
+            './app': null,
+            './app/pages': null,
+            './app/pages/(marketing)/index.tsx': 'console.log("Hello")',
+            './app/pages/(marketing)/remix.tsx': 'console.log("Hello")',
+            './app/pages/(marketing)/_layout.tsx': 'console.log("Hello")',
+        })
+    })
+
+
+    test('creates index routes correctly', () => {
+        const contents = nextRoutes(pageRouterStyle)
+        const expected = [
+            layout("pages/(marketing)/_layout.tsx", [
+                route("/", "pages/(marketing)/index.tsx"),
+                route("/remix", "pages/(marketing)/remix.tsx"),
+            ])
+        ]
+
+        assert.sameDeepMembers(contents, expected, 'same members')
+    })
+})
+
+describe('same level exclusion tests', () => {
+    beforeEach(() => {
+        // Reset volume before each test
+        vol.reset();
+
+        // Create a mock file structure
+        vol.fromJSON({
+            './app/pages/index.tsx': "{}",
+            './app/pages/(excluded)/about.tsx': "{}",
+            './app/pages/(alsoExluded)/legal.tsx': "{}",
+        })
+    })
+
+
+    test('creates index routes correctly', () => {
+        const contents = nextRoutes(pageRouterStyle)
+        const expected = [
+            {
+                file: 'pages/index.tsx',
+                children: undefined,
+                path: '/'
+            },
+            {
+                file: 'pages/(excluded)/about.tsx',
+                children: undefined,
+                path: '/about'
+            },
+            {
+                file: 'pages/(alsoExluded)/legal.tsx',
+                children: undefined,
+                path: '/legal'
+            },
+
         ]
 
         assert.sameDeepMembers(contents, expected, 'same members')
@@ -502,7 +569,7 @@ describe('different baseDir route generation tests', () => {
         })
     })
 
- 
+
     test('creates index routes correctly', () => {
         const contents = generateRouteConfig({...pageRouterStyle, folderName: 'diff'})
         const expected = [

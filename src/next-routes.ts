@@ -104,7 +104,7 @@ export function nextRoutes(options: Options = defaultOptions): RouteConfigEntry[
      */
     function scanDir(dirPath: string) {
         return {
-            folderName: parse(dirPath).name,
+            folderName: parse(dirPath).base,
             files: readdirSync(dirPath).sort((a, b) => {
                 const {ext: aExt, name: aName} = parse(a);
                 return ((routeFileNames.includes(aName) && extensions.includes(aExt)) ? -1 : 1)
@@ -132,12 +132,12 @@ export function nextRoutes(options: Options = defaultOptions): RouteConfigEntry[
 
             const fullPath = join(dir, item);
             const stats = statSync(fullPath);
-            const {name, ext} = parse(item);
+            const {name, ext, base} = parse(item);
             const relativePath = join(baseFolder, relative(pagesDir, fullPath));
 
             if (stats.isDirectory()) {
                 // Handle nested directories
-                const nestedRoutes = scanDirectory(fullPath, `${parentPath}/${name}`);
+                const nestedRoutes = scanDirectory(fullPath, `${parentPath}/${base}`);
                 (layoutFile ? currentLevelRoutes : routes).push(...nestedRoutes);
             } else if (extensions.includes(ext)) {
                 // Early return if strict file names are enabled and the current item is not in the list.

@@ -367,6 +367,8 @@ describe('approuter route generation tests', () => {
             './app/folder/test/(excluded)/route.ts': 'export const helper = () => {}',
             './app/folder/test/_discarded/route.ts': 'export const helper = () => {}',
             './app/folder/test/_discarded/page.tsx': 'export const helper = () => {}',
+            './app/[...all]/route.tsx': 'console.log("Hello")',
+            './app/nested/[...all]/route.tsx': 'console.log("Hello")',
         })
     })
 
@@ -376,6 +378,8 @@ describe('approuter route generation tests', () => {
             {file: 'page.tsx', children: undefined, path: '/'},
             {file: 'folder/page.tsx', children: undefined, path: '/folder'},
             {file: 'folder/test/(excluded)/route.ts', children: undefined, path: '/folder/test'},
+            {file: '[...all]/route.tsx', children: undefined, path: "/*"},
+            {file: 'nested/[...all]/route.tsx', children: undefined, path: "/nested/*"}
         ]
 
         assert.sameDeepMembers(contents, expected, 'same members')

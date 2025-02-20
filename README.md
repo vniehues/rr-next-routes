@@ -1,4 +1,17 @@
-# rr-next-routes
+
+<div align="center">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/vniehues/rr-next-routes/main/assets/rr-next-routes-dark.svg">
+      <img alt="rr-next-routes logo" src="https://raw.githubusercontent.com/vniehues/rr-next-routes/main/assets/rr-next-routes-light.svg" height="128">
+    </picture>
+  <h1>rr-next-routes</h1>
+
+<a href="https://www.npmjs.com/package/rr-next-routes"><img alt="NPM version" src="https://img.shields.io/npm/v/rr-next-routes?style=for-the-badge"></a>
+<a href="https://github.com/vniehues/rr-next-routes/license.md"><img alt="License" src="https://img.shields.io/npm/l/rr-next-routes?style=for-the-badge"></a>
+</div>
+
+
+## Features
 `rr-next-routes` is a utility library for generating **Next.js-style** routes for your **React Router v7** or **Remix** applications.    
 It provides a directory-based routing solution for React applications, similar to Next.js, and supports features like layouts, route parameters, and dynamic routing with nested route management.
 
@@ -210,7 +223,3 @@ npm run build
 npm run dev
 ```
 
----
-
-## License
-This project is licensed under the [ISC License](https://opensource.org/license/isc-license-txt).

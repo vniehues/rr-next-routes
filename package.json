@@ -31,7 +31,7 @@
     "routing"
   ],
   "author": "Vincent Niehues",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@react-router/dev": "^7.0.0",
     "@types/node": "^22.10.5",

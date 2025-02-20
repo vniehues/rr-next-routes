@@ -7,9 +7,8 @@
   <h1>rr-next-routes</h1>
 
 <a href="https://www.npmjs.com/package/rr-next-routes"><img alt="NPM version" src="https://img.shields.io/npm/v/rr-next-routes?style=for-the-badge"></a>
-<a href="https://github.com/vniehues/rr-next-routes/license.md"><img alt="License" src="https://img.shields.io/npm/l/rr-next-routes?style=for-the-badge"></a>
+<a href="https://github.com/vniehues/rr-next-routes/blob/main/license.md"><img alt="License" src="https://img.shields.io/npm/l/rr-next-routes?style=for-the-badge"></a>
 </div>
-
 
 ## Features
 `rr-next-routes` is a utility library for generating **Next.js-style** routes for your **React Router v7** or **Remix** applications.    

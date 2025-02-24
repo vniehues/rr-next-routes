@@ -28,9 +28,9 @@ you can even still use the [manual routing](https://reactrouter.com/start/framew
 #### **`routes.ts`**
 ``` typescript
 import {route, type RouteConfig} from "@react-router/dev/routes";
-import {generateRouteConfig, appRouterStyle} from "rr-next-routes";
+import {nextRoutes, appRouterStyle} from "rr-next-routes";
 
-const autoRoutes = generateRouteConfig({
+const autoRoutes = nextRoutes({
     ...appRouterStyle,
     print: "tree",
 });
@@ -70,9 +70,9 @@ Here’s a sample usage of `rr-next-routes` for generating route configurations:
 #### **`routes.ts`**
 ``` typescript
 import { type RouteConfig } from "@react-router/dev/routes";
-import { generateRouteConfig } from "rr-next-routes";
+import { nextRoutes } from "rr-next-routes";
 
-const routes = generateRouteConfig({ print: "info" });
+const routes = nextRoutes({ print: "info" });
 
 export default routes satisfies RouteConfig;
 ```
@@ -81,7 +81,7 @@ export default routes satisfies RouteConfig;
 
 ## Configuration Options
 
-The `generateRouteConfig` function accepts an optional configuration object of type `Options`:
+The `nextRoutes` function accepts an optional configuration object of type `Options`:
 
 #### `Options` Type
 ```typescript
@@ -133,16 +133,16 @@ export const pageRouterStyle: Options = {
 
 #### Default Configuration:
 ```typescript
-const routes = generateRouteConfig(); // Uses default options (appRouterStyle).
+const routes = nextRoutes(); // Uses default options (appRouterStyle).
 ```
 
 #### Using Pages Router:
 ```typescript
-const routes = generateRouteConfig(pageRouterStyle);
+const routes = nextRoutes(pageRouterStyle);
 ```
 #### Custom App Router:
 ```typescript
-const routes = generateRouteConfig({
+const routes = nextRoutes({
     ...appRouterStyle,
     print: "tree",
     layoutFileName: "_customLayout",

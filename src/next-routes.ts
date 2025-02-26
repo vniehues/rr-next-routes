@@ -1,7 +1,14 @@
 import {readdirSync, statSync} from 'node:fs';
 import {join, parse, relative, resolve} from 'node:path';
 import {type RouteConfigEntry, getAppDirectory, route, layout} from "@react-router/dev/routes";
-import {deepSortByPath, parseParameter, printRoutesAsTable, printRoutesAsTree, transformRoutePath} from "./utils";
+import {
+    deepSortByPath,
+    isHoistedFolder,
+    parseParameter,
+    printRoutesAsTable,
+    printRoutesAsTree,
+    transformRoutePath
+} from "./utils";
 
 type PrintOption = "no" | "info" | "table" | "tree";
 
@@ -125,9 +132,10 @@ export function nextRoutes(options: Options = defaultOptions): RouteConfigEntry[
             return (name === layoutFileName && extensions.includes(ext));
         });
         const currentLevelRoutes: RouteConfigEntry[] = [];
-        
+
         // Process each file in the directory
         files.forEach(item => {
+            // Early return for excluded items
             if (item.startsWith('_')) return;
 
             const fullPath = join(dir, item);
@@ -135,10 +143,13 @@ export function nextRoutes(options: Options = defaultOptions): RouteConfigEntry[
             const {name, ext, base} = parse(item);
             const relativePath = join(baseFolder, relative(pagesDir, fullPath));
 
+            // Don't create accessible routes for layout files.
+            if (layoutFileName && name === layoutFileName) return;
+
             if (stats.isDirectory()) {
                 // Handle nested directories
                 const nestedRoutes = scanDirectory(fullPath, `${parentPath}/${base}`);
-                (layoutFile ? currentLevelRoutes : routes).push(...nestedRoutes);
+                (layoutFile && !isHoistedFolder(name) ? currentLevelRoutes : routes).push(...nestedRoutes);
             } else if (extensions.includes(ext)) {
                 // Early return if strict file names are enabled and the current item is not in the list.
                 if (routeFileNameOnly && !routeFileNames.includes(name)) return;
@@ -146,8 +157,6 @@ export function nextRoutes(options: Options = defaultOptions): RouteConfigEntry[
                 (layoutFile ? currentLevelRoutes : routes).push(routeConfig);
             }
         });
-
-        // If layout file exists, wrap current level routes in a layout
         if (layoutFile) {
             const layoutPath = join(baseFolder, relative(pagesDir, join(dir, layoutFile)));
             routes.push(layout(layoutPath, currentLevelRoutes));

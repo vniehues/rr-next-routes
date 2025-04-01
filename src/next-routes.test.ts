@@ -1,9 +1,9 @@
 import {assert, beforeEach, describe, expect, test, vi} from 'vitest'
 import {vol} from 'memfs'
-import {appRouterStyle, generateRouteConfig, nextRoutes, pageRouterStyle} from "./next-routes";
+import {appRouterStyle, nextRoutes, pageRouterStyle} from "./next-routes";
 import {deepSortByPath, parseParameter, transformRoutePath} from "./utils";
 import * as fs from "node:fs";
-import {index, layout, prefix, route} from "@react-router/dev/routes";
+import {layout, prefix, route} from "@react-router/dev/routes";
 
 vi.mock("node:fs", async () => {
     const memfs = await vi.importActual("memfs");
@@ -787,6 +787,7 @@ describe('concert routes structure without grouping', () => {
             folderName: "routes",
             layoutFileName: "layout",
             print: "tree",
+            enableHoistedFolders: true,
         });
         const expected = [
             layout("routes/concerts/layout.tsx", [
@@ -857,7 +858,7 @@ describe('comprehensive route combinations', () => {
     });
 
     test('handles hoisted folders with dynamic parameters', () => {
-        const routes = nextRoutes(pageRouterStyle);
+        const routes = nextRoutes({...pageRouterStyle, enableHoistedFolders: true});
 
         // Find the layout for the hoisted section
         const sectionLayout = routes.find(r => r.file === 'pages/{section}/_layout.tsx');
@@ -879,7 +880,7 @@ describe('comprehensive route combinations', () => {
     });
 
     test('handles comprehensive combination of all route conventions', () => {
-        const routes = nextRoutes(pageRouterStyle);
+        const routes = nextRoutes({...pageRouterStyle, enableHoistedFolders: true});
 
         // Find the layout for the hoisted section
         const sectionLayout = routes.find(r => r.file === 'pages/{section}/_layout.tsx');
@@ -923,7 +924,7 @@ describe('comprehensive route combinations', () => {
 
     test('compares nextRoutes output with actual react-router-v7 routes', () => {
         // Generate routes using nextRoutes
-        const generatedRoutes = nextRoutes(pageRouterStyle);
+        const generatedRoutes = nextRoutes({...pageRouterStyle, enableHoistedFolders: true});
 
         // Construct actual react-router-v7 routes
         const actualRoutes = [
@@ -957,5 +958,89 @@ describe('comprehensive route combinations', () => {
         // Check if all actual routes are present in generated routes
         // This test might fail if the implementation changes, which is okay according to the issue description
         expect(sortedGeneratedRoutes).toEqual(sortedActualRoutes);
+    });
+})
+
+describe('hoisted folders with enableHoistedFolders: false for pageRouterStyle', () => {
+    beforeEach(() => {
+        // Reset volume before each test
+        vol.reset();
+
+        // Create a mock file structure with hoisted folders
+        vol.fromJSON({
+            './app/pages/{section}/index.tsx': 'export default () => {}',
+            './app/pages/{section}/about.tsx': 'export default () => {}',
+            './app/pages/{section}/_layout.tsx': 'export default () => {}',
+            './app/pages/{section}/[id].tsx': 'export default () => {}',
+        })
+    })
+
+    test('does not hoist routes when enableHoistedFolders is false', () => {
+        const routes = nextRoutes({...pageRouterStyle});
+
+        // With enableHoistedFolders: false, the {section} folder should not be hoisted
+        // So we should have a layout with children, but the paths should include '{section}'
+        const sectionLayout = routes.find(r => r.file === 'pages/{section}/_layout.tsx');
+        expect(sectionLayout).toBeDefined();
+        expect(sectionLayout?.children).toBeDefined();
+
+        if (sectionLayout?.children) {
+            // Check for index route - curly braces are always removed from paths
+            const indexRoute = sectionLayout.children.find(r => r.path === '/section');
+            expect(indexRoute).toBeDefined();
+            expect(indexRoute?.file).toBe('pages/{section}/index.tsx');
+
+            // Check for about route
+            const aboutRoute = sectionLayout.children.find(r => r.path === '/section/about');
+            expect(aboutRoute).toBeDefined();
+            expect(aboutRoute?.file).toBe('pages/{section}/about.tsx');
+
+            // Check for dynamic route
+            const dynamicRoute = sectionLayout.children.find(r => r.path === '/section/:id');
+            expect(dynamicRoute).toBeDefined();
+            expect(dynamicRoute?.file).toBe('pages/{section}/[id].tsx');
+        }
+    });
+})
+
+describe('hoisted folders with enableHoistedFolders: false for appRouterStyle', () => {
+    beforeEach(() => {
+        // Reset volume before each test
+        vol.reset();
+
+        // Create a mock file structure with hoisted folders
+        vol.fromJSON({
+            './app/{section}/page.tsx': 'export default () => {}',
+            './app/{section}/about/page.tsx': 'export default () => {}',
+            './app/{section}/layout.tsx': 'export default () => {}',
+            './app/{section}/[id]/page.tsx': 'export default () => {}',
+        })
+    })
+
+    test('does not hoist routes when enableHoistedFolders is false', () => {
+        const routes = nextRoutes({...appRouterStyle});
+
+        // With enableHoistedFolders: false, the {section} folder should not be hoisted
+        // So we should have a layout with children, but the paths should include '{section}'
+        const sectionLayout = routes.find(r => r.file === '{section}/layout.tsx');
+        expect(sectionLayout).toBeDefined();
+        expect(sectionLayout?.children).toBeDefined();
+
+        if (sectionLayout?.children) {
+            // Check for page route - curly braces are always removed from paths
+            const pageRoute = sectionLayout.children.find(r => r.path === '/section');
+            expect(pageRoute).toBeDefined();
+            expect(pageRoute?.file).toBe('{section}/page.tsx');
+
+            // Check for about route
+            const aboutRoute = sectionLayout.children.find(r => r.path === '/section/about');
+            expect(aboutRoute).toBeDefined();
+            expect(aboutRoute?.file).toBe('{section}/about/page.tsx');
+
+            // Check for dynamic route
+            const dynamicRoute = sectionLayout.children.find(r => r.path === '/section/:id');
+            expect(dynamicRoute).toBeDefined();
+            expect(dynamicRoute?.file).toBe('{section}/[id]/page.tsx');
+        }
     });
 })

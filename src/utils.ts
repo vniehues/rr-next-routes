@@ -6,6 +6,7 @@ export function transformRoutePath(path: string): string {
         .replace(/\[\.\.\.\s*([^\]]+)\s*]/g, '*')  // Handle catch-all parameters [...param]
         .replace(/\[([^\]]+)]/g, ':$1')           // Handle regular parameters [param]
         .replace(/\/\([^)]*\)\//g, '/')          // Handle regular parameters [param]
+        .replace(/\{([^}]+)\}/g, '$1')           // Strip curly braces {param}
         .replace(/\/\([^)]*\)/g, '');           // Remove parentheses and contents only if surrounded by slashes
     
     if(transformedPath === "") {
@@ -14,6 +15,11 @@ export function transformRoutePath(path: string): string {
     
     return transformedPath;
 }
+
+export function isHoistedFolder(name: string): boolean {
+    return /^{[^{}]+}$/.test(name);
+}
+
 
 function parseDynamicRoute(name: string): { paramName?: string; routeName: string } {
     const paramMatch = name.match(/\[(.+?)]/);
@@ -96,8 +102,19 @@ export function deepSortByPath(value: any): any {
 function compareByPath(a: any, b: any): number {
     const pathA = a.path || '';
     const pathB = b.path || '';
-    return pathA.localeCompare(pathB); // Compare paths alphabetically
+
+    // Check if either file path contains a hoisted folder
+    const aHoisted = a.file?.includes('/{');
+    const bHoisted = b.file?.includes('/{');
+
+    // If one is hoisted and the other isn't, hoisted should come first
+    if (aHoisted && !bHoisted) return -1;
+    if (!aHoisted && bHoisted) return 1;
+
+    // If both are hoisted or both are not, sort by path
+    return pathA.localeCompare(pathB);
 }
+
 
 
 export function printRoutesAsTable(routes: RouteConfigEntry[]): void {

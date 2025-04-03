@@ -1,5 +1,5 @@
 {
-  "include": ["./src"],
+  "include": ["./src", "./types"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "types": ["vite/client", "node"],

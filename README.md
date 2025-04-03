@@ -28,7 +28,8 @@ you can even still use the [manual routing](https://reactrouter.com/start/framew
 #### **`routes.ts`**
 ``` typescript
 import {route, type RouteConfig} from "@react-router/dev/routes";
-import {nextRoutes, appRouterStyle} from "rr-next-routes";
+import {nextRoutes, appRouterStyle} from "rr-next-routes/react-router";
+//import {nextRoutes, appRouterStyle} from "rr-next-routes/remix";
 
 const autoRoutes = nextRoutes({
     ...appRouterStyle,
@@ -70,7 +71,9 @@ Here’s a sample usage of `rr-next-routes` for generating route configurations:
 #### **`routes.ts`**
 ``` typescript
 import { type RouteConfig } from "@react-router/dev/routes";
-import { nextRoutes } from "rr-next-routes";
+import {nextRoutes, appRouterStyle} from "rr-next-routes/react-router";
+// for remix use this instead
+// import {nextRoutes, appRouterStyle} from "rr-next-routes/remix";
 
 const routes = nextRoutes({ print: "info" });
 

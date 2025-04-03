@@ -4,7 +4,7 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "generate nextjs-style routes in your react-router-v7 application",
   "scripts": {
     "dev": "vitest watch",
@@ -16,6 +16,14 @@
     ".": {
       "types": "./dist/next-routes.d.ts",
       "import": "./dist/next-routes.js"
+    },
+    "./react-router": {
+      "types": "./dist/react-router/index.d.ts",
+      "import": "./dist/react-router/index.js"
+    },
+    "./remix": {
+      "types": "./dist/remix/index.d.ts",
+      "import": "./dist/remix/index.js"
     }
   },
   "files": [
@@ -34,6 +42,7 @@
   "license": "MIT",
   "devDependencies": {
     "@react-router/dev": "^7.0.0",
+    "@remix-run/route-config": "^2.16.4",
     "@types/node": "^22.10.5",
     "@vitest/coverage-v8": "^2.1.8",
     "memfs": "^4.15.3",

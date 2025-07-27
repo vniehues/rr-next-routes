@@ -203,6 +203,34 @@ These routes are created using a special character mapping:
 | `[[optional]].tsx` | `/:optional?` |
 | `[...all].tsx` | `/*` |
 
+## Deploying on Vercel
+
+When deploying to Vercel, you may run into a vague build error:
+
+> An unexpected error happened when running this build. We have been notified of the problem.
+
+This can happen when your `routes.ts` file doesn’t explicitly include an `index()` route. Even if `nextRoutes()` correctly generates a route for `/`, Vercel's build process may still fail unless that route is defined using `index()`.
+
+### Fix
+
+Manually define the index route and filter out the `/` path from the generated routes:
+
+```ts
+import { nextRoutes, pageRouterStyle } from "rr-next-routes/react-router";
+import { route, index } from "@react-router/dev/routes";
+
+const generatedRoutes = nextRoutes({ ...pageRouterStyle, print: "tree" });
+const otherRoutes = generatedRoutes.filter(r => r.path !== "/");
+
+const routes = [
+  index("./pages/index.tsx"),
+  ...otherRoutes
+];
+
+export default routes;
+```
+
+No need to modify `rr-next-routes` itself – just include the `index()` call as shown above to ensure Vercel deploys your app without issues.
 
 ---
 ## Testing

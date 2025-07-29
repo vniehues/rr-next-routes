@@ -71,8 +71,14 @@ export function createRouteConfig(
 
     // Handle regular index routes
     if (routeFileNames.includes(name)) {
-        const routePath = parentPath === '' ? '/' : parentPath;
-        return routeCreator(transformRoutePath(routePath), relativePath);
+      // This is an index route - should use the index function
+      if (parentPath === "") {
+        // Root index route - should be an index route
+        return index(relativePath); // Use the index function instead of route
+      } else {
+        // Nested index route
+        return routeCreator(transformRoutePath(parentPath), relativePath);
+      }
     }
 
     // Handle dynamic and regular routes

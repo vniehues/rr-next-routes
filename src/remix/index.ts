@@ -1,11 +1,11 @@
 import {
     appRouterStyle,
-    createRouteConfig,
     generateNextRoutes,
     pageRouterStyle,
     type Options
 } from "../common/next-routes-common";
-import {type RouteConfigEntry, getAppDirectory, route, layout } from "@remix-run/route-config";
+import {type RouteConfigEntry, getAppDirectory, index, route, layout} from "@remix-run/route-config";
+
 /**
  * @deprecated The method should not be used anymore. please use {@link nextRoutes} instead.
  */
@@ -20,6 +20,7 @@ export function nextRoutes(options: Options = appRouterStyle): RouteConfigEntry[
     return generateNextRoutes(
         options,
         getAppDirectory,
+        index,
         route,
         layout
     );

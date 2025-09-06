@@ -51,6 +51,7 @@ const defaultOptions: Options = appRouterStyle;
  * @param relativePath - Relative path to the file from pages directory
  * @param folderName - Name of the current folder (needed for dynamic routes)
  * @param routeFileNames - name of the index routes
+ * @param indexCreator - Function to create an index entry
  * @param routeCreator - Function to create a route entry
  * @returns Route configuration entry
  */
@@ -60,6 +61,7 @@ export function createRouteConfig(
     relativePath: string,
     folderName: string,
     routeFileNames: string[],
+    indexCreator: (path: string) => RouteConfigEntry,
     routeCreator: (path: string, file: string) => RouteConfigEntry
 ): RouteConfigEntry {
     // Handle index routes in dynamic folders
@@ -74,7 +76,7 @@ export function createRouteConfig(
       // This is an index route - should use the index function
       if (parentPath === "") {
         // Root index route - should be an index route
-        return index(relativePath); // Use the index function instead of route
+        return indexCreator(relativePath); // Use the index function instead of route
       } else {
         // Nested index route
         return routeCreator(transformRoutePath(parentPath), relativePath);
@@ -91,6 +93,7 @@ export function createRouteConfig(
  * Generates route configuration from a Next.js-style pages directory
  * @param options - Configuration options for route generation
  * @param getAppDir - Function to get the app directory
+ * @param indexCreator - Function to create an index entry
  * @param routeCreator - Function to create a route entry
  * @param layoutCreator - Function to create a layout entry
  * @returns Array of route configurations
@@ -98,6 +101,7 @@ export function createRouteConfig(
 export function generateNextRoutes(
     options: Options = defaultOptions,
     getAppDir: () => string,
+    indexCreator: (path: string) => RouteConfigEntry,
     routeCreator: (path: string, file: string) => RouteConfigEntry,
     layoutCreator: (file: string, children: RouteConfigEntry[]) => RouteConfigEntry
 ): RouteConfigEntry[] {
@@ -163,7 +167,7 @@ export function generateNextRoutes(
             } else if (extensions.includes(ext)) {
                 // Early return if strict file names are enabled and the current item is not in the list.
                 if (routeFileNameOnly && !routeFileNames.includes(name)) return;
-                const routeConfig = createRouteConfig(name, parentPath, relativePath, folderName, routeFileNames, routeCreator);
+                const routeConfig = createRouteConfig(name, parentPath, relativePath, folderName, routeFileNames, indexCreator, routeCreator);
                 (layoutFile ? currentLevelRoutes : routes).push(routeConfig);
             }
         });

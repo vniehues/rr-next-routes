@@ -2,7 +2,7 @@ import {assert, beforeEach, describe, expect, test} from "vitest";
 import {deepSortByPath, parseParameter, transformRoutePath} from "../common/utils";
 import {vol} from "memfs";
 import {appRouterStyle, nextRoutes, pageRouterStyle} from "../next-routes";
-import {layout, prefix, route} from "@react-router/dev/routes";
+import {layout, prefix, route, index} from "@react-router/dev/routes";
 
 export function runSharedTests(label: string) {
     describe(`${label} implementation`, () => {
@@ -84,7 +84,7 @@ export function runSharedTests(label: string) {
                             route("/patha/routeb", "pages/patha/(excludedPath)/routeb.tsx"),
                         ])
                     ]),
-                    route("/", "pages/index.tsx"),
+                    index("pages/index.tsx"),
                     route("/about", "pages/about.tsx"),
                     ...prefix("/profile", [
                         route("name", "pages/profile/name.tsx"),
@@ -227,8 +227,7 @@ export function runSharedTests(label: string) {
                     },
                     {
                         file: 'pages/index.tsx',
-                        children: undefined,
-                        path: '/'
+                        index: true,
                     },
                 ]);
 
@@ -258,7 +257,10 @@ export function runSharedTests(label: string) {
             test('creates index routes correctly', () => {
                 const contents = nextRoutes(pageRouterStyle)
                 const expected = [
-                    {file: 'pages/index.tsx', children: undefined, path: '/'},
+                    {
+                        file: 'pages/index.tsx',
+                        index: true,
+                    },
                     {
                         file: 'pages/utils/index.tsx',
                         children: undefined,
@@ -318,8 +320,7 @@ export function runSharedTests(label: string) {
                 const expected = [
                     {
                         file: 'pages/index.tsx',
-                        children: undefined,
-                        path: '/'
+                        index: true,
                     },
                     {
                         file: 'pages/(excluded)/about.tsx',
@@ -359,7 +360,7 @@ export function runSharedTests(label: string) {
             test('creates index routes correctly', () => {
                 const contents = nextRoutes(appRouterStyle)
                 const expected = [
-                    {file: 'page.tsx', children: undefined, path: '/'},
+                    {file: 'page.tsx', index: true},
                     {file: 'folder/page.tsx', children: undefined, path: '/folder'},
                     {file: 'folder/test/(excluded)/route.ts', children: undefined, path: '/folder/test'},
                     {file: '[...all]/route.tsx', children: undefined, path: "/*"},
@@ -390,7 +391,7 @@ export function runSharedTests(label: string) {
             test('creates index routes correctly', () => {
                 const contents = nextRoutes(pageRouterStyle)
                 const expected = [
-                    {file: 'pages/index.tsx', children: undefined, path: '/'},
+                    {file: 'pages/index.tsx', index: true},
                     {file: 'pages/folder/index.tsx', children: undefined, path: '/folder'},
                     {file: 'pages/folder/stillARoute.tsx', children: undefined, path: '/folder/stillARoute'},
                     {file: 'pages/folder/test/(excluded)/index.tsx', children: undefined, path: '/folder/test'},
@@ -526,9 +527,7 @@ export function runSharedTests(label: string) {
                         ]
                     },
                     {
-                        file: 'pages/index.tsx',
-                        children: undefined,
-                        path: '/'
+                        file: 'pages/index.tsx', index: true
                     },
                 ].sort((a, b) => {
                     const pathA = a.path ?? ''; // Default to empty string if `path` is undefined
@@ -562,9 +561,7 @@ export function runSharedTests(label: string) {
                 const contents = nextRoutes({...pageRouterStyle, folderName: 'diff'})
                 const expected = [
                     {
-                        file: 'diff/index.tsx',
-                        children: undefined,
-                        path: '/'
+                        file: 'diff/index.tsx', index: true
                     },
                     {
                         file: 'diff/utils/index.tsx',
@@ -589,7 +586,7 @@ export function runSharedTests(label: string) {
 
                 const routes = nextRoutes(pageRouterStyle);
                 const expected = [
-                    {file: 'pages/index.tsx', children: undefined, path: '/'},
+                    {file: 'pages/index.tsx', index: true},
                 ];
 
                 assert.sameDeepMembers(routes, expected, 'same members')
@@ -603,7 +600,7 @@ export function runSharedTests(label: string) {
 
                 const routes = nextRoutes({...pageRouterStyle, folderName: 'different'});
                 const expected = [
-                    {file: 'different/index.tsx', children: undefined, path: '/'},
+                    {file: 'different/index.tsx', index: true},
                 ];
 
                 assert.sameDeepMembers(routes, expected, 'same members')
@@ -645,8 +642,7 @@ export function runSharedTests(label: string) {
                         children: [
                             {
                                 file: 'pages/index.tsx',
-                                path: '/',
-                                children: undefined
+                                index: true
                             }
                         ],
                     },
@@ -702,14 +698,12 @@ export function runSharedTests(label: string) {
 
                 const routes = nextRoutes(pageRouterStyle);
                 const expected = [
-                    {file: 'pages/index.tsx', children: undefined, path: '/'},
+                    {file: 'pages/index.tsx', index: true},
                     {file: 'pages/(excluded)/file.tsx', children: undefined, path: '/file'},
                 ];
                 assert.sameDeepMembers(routes, expected, 'same members')
             });
         });
-
-
 
 
         describe('concert routes structure', () => {
